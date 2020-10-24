@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+load_dotenv(verbose=True)  # Must do this before anything else.  Mailgun loads env variables on load
+
 import logging
 from flask import Flask, jsonify
 from flask_restful import Api
@@ -12,10 +14,9 @@ import sys
 
 from db import db
 from ma import ma
-# from resources.user import UserRegister, UserList, UserLogin, TokenRefresh
+from resources.user import UserRegister, UserList, UserLogin, TokenRefresh
 # from resources.measurement import Measurement, MeasurementList
-# from resources.confirmation import Confirmation, ConfirmationByUser
-load_dotenv(verbose=True)  # Must do this before anything else.
+from resources.confirmation import Confirmation, ConfirmationByUser
 app = Flask(__name__)
 cors = CORS(app)
 print(f"Using settings from {os.environ['APPLICATION_SETTINGS']}")
@@ -38,14 +39,14 @@ def handle_marshmallow_error(err):
     return jsonify(err.messages), 400
 
 
-# api.add_resource(UserRegister, "/register")
-# api.add_resource(UserList, "/users")
+api.add_resource(UserRegister, "/register")
+api.add_resource(UserList, "/users")
 # api.add_resource(Measurement, "/measurement")
 # api.add_resource(MeasurementList, "/measurements/<string:location>")
-# api.add_resource(UserLogin, "/login")
-# api.add_resource(TokenRefresh, "/refresh")
-# api.add_resource(Confirmation, "/confirm/<string:confirmation_id>")
-# api.add_resource(ConfirmationByUser, "/check/<int:user_id>")
+api.add_resource(UserLogin, "/login")
+api.add_resource(TokenRefresh, "/refresh")
+api.add_resource(Confirmation, "/confirm/<string:confirmation_id>")
+api.add_resource(ConfirmationByUser, "/check/<int:user_id>")
 
 if __name__ == "__main__":
     intent = os.environ.get('FLASK_INTENT', None)

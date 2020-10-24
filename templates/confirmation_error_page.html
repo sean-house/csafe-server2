@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>****Registration ERROR****</title>
+    <link href="{{url_for('static', filename='confirmation_page.css')}}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+
+  <div class="container-fluid">
+    <div class="jumbotron text-center full-height">
+      <h1>There has been a problem registering this email address</h1>
+      <p><em>The following error occurred: <br>{{ error_msg }}.<br><br>
+          Please resolve the error and try again.</em></p>
+    </div>
+
+    <footer class="text-center">
+      <hr>
+      <p><a href="http://blog.tecladocode.com/" target="_blank">Teclado</a></p>
+    </footer>
+  </div>
+
+</body>
+</html>
