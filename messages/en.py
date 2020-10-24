@@ -52,3 +52,6 @@ EXPIRED = 'This registration has expired.  Please re-register'
 ALREADY_CONFIRMED = 'You have already confirmed this email. No need to do so again'
 RESEND_SUCCESSFUL = 'Resent confirmation mail.  Check your mailbox'
 RESEND_FAILED = 'Failed to resend confirmation mail.  Problem with the Mailgun service'
+
+# Safe message
+SAFE_REGISTRATION_ERROR = "Registration error"

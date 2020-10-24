@@ -15,7 +15,7 @@ import sys
 from db import db
 from ma import ma
 from resources.user import UserRegister, UserList, UserLogin, TokenRefresh
-# from resources.measurement import Measurement, MeasurementList
+from resources.safe import SafeList, SafeRegister, SafeCheckin
 from resources.confirmation import Confirmation, ConfirmationByUser
 app = Flask(__name__)
 cors = CORS(app)
@@ -38,15 +38,17 @@ def create_tables():
 def handle_marshmallow_error(err):
     return jsonify(err.messages), 400
 
-
+# User endpoints
 api.add_resource(UserRegister, "/register")
 api.add_resource(UserList, "/users")
-# api.add_resource(Measurement, "/measurement")
-# api.add_resource(MeasurementList, "/measurements/<string:location>")
 api.add_resource(UserLogin, "/login")
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(Confirmation, "/confirm/<string:confirmation_id>")
 api.add_resource(ConfirmationByUser, "/check/<int:user_id>")
+# Safe endpoints
+api.add_resource(SafeList, "/api/safe")
+api.add_resource(SafeRegister, "/api/register")
+api.add_resource(SafeCheckin, "/api/checkin")
 
 if __name__ == "__main__":
     intent = os.environ.get('FLASK_INTENT', None)
