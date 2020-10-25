@@ -61,3 +61,29 @@ class SafeModel(db.Model):
         :param
         """
         return cls.query.all()
+
+class SafeEventModel(db.Model):
+    __tablename__ = 'safe_event'
+
+    hardware_id = db.Column(db.String(64), db.ForeignKey("safe.hardware_id"), primary_key=True)
+    timestamp = db.Column(db.DateTime(), primary_key=True)
+    event_code = db.Column(db.Integer, nullable=False)
+    detail = db.Column(db.String(40), nullable=False)
+
+    safe = db.relationship("SafeModel")
+
+    def save_to_db(self) -> None:
+        """
+        :cvar
+        """
+        db.session.add(self)
+        db.session.commit()
+
+    @classmethod
+    def find_all(cls) -> List["SafeEventModel"]:
+        """
+
+        :return:
+        """
+        return cls.query.all()
+

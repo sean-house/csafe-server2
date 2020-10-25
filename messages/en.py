@@ -55,3 +55,4 @@ RESEND_FAILED = 'Failed to resend confirmation mail.  Problem with the Mailgun s
 
 # Safe message
 SAFE_REGISTRATION_ERROR = "Registration error"
+SAFE_CHECKIN_ERROR = "Checkin error"
