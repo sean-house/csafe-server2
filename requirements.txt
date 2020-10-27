@@ -9,7 +9,7 @@ certifi=2020.4.5.2=py38h32f6830_0
 cffi=1.14.0=py38h356ff06_0
 chardet=3.0.4=py38h32f6830_1006
 click=7.1.2=pyh9f0ad1d_0
-cryptography=2.9.2=py38hb761dab_0
+cryptography=3.1.1=py38hb761dab_0
 flask=1.1.2=pyh9f0ad1d_0
 flask-jwt-extended=3.24.1=pyh9f0ad1d_0
 flask-marshmallow=0.13.0=pyh9f0ad1d_0
@@ -46,7 +46,7 @@ readline=8.0=hcfe32e1_0
 requests=2.24.0=pyh9f0ad1d_0
 setuptools=46.4.0=py38h32f6830_0
 six=1.15.0=pyh9f0ad1d_0
-sqlalchemy=1.3.17=py38h64e0658_0
+sqlalchemy=1.3.18=py38h64e0658_0
 sqlite=3.30.1=h93121df_0
 tk=8.6.10=hbbe82c9_0
 urllib3=1.25.9=py_0

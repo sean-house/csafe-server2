@@ -56,3 +56,8 @@ RESEND_FAILED = 'Failed to resend confirmation mail.  Problem with the Mailgun s
 # Safe message
 SAFE_REGISTRATION_ERROR = "Registration error"
 SAFE_CHECKIN_ERROR = "Checkin error"
+
+# Operations messages
+CLAIM_NO_SAFE = "That safe does not exist"
+CLAIM_NOT_AVAILABLE = "That safe cannot be claimed"
+RELEASE_NOT_OWNED = "You do not own that safe"

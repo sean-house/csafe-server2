@@ -10,6 +10,7 @@ import os
 
 from flask_restful import Resource
 from flask import request, jsonify
+from flask_jwt_extended import jwt_required
 
 from models.safe import SafeModel, SafeEventModel
 from schemas.safe import SafeSchema
@@ -37,6 +38,12 @@ class SafeList(Resource):
     # @jwt_required
     def get(cls):
         return {"safes": [safe_schema.dump(safe) for safe in SafeModel.find_all()]}
+
+class AvailableSafes(Resource):
+    @classmethod
+    @jwt_required
+    def get(clscls):
+        return {"safes": [safe_schema.dump(safe) for safe in SafeModel.find_available()]}
 
 class SafeRegister(Resource):
     @classmethod
@@ -133,5 +140,5 @@ class SafeCheckin(Resource):
                     return {"error": msgs.SAFE_CHECKIN_ERROR}, 400
             else:
                 return {"error": msgs.SAFE_CHECKIN_ERROR}, 400
-        return {"checkin": "diagnostic response"}
-
+        logging.info(f"Improperly formed checkin request: {parms}")
+        return {"error": msgs.SAFE_CHECKIN_ERROR}, 400

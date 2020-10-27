@@ -20,17 +20,11 @@ class SafeModel(db.Model):
     unlock_time = db.Column(db.DateTime(), nullable=False)
     scan_freq = db.Column(db.Integer, server_default='300', nullable=False)
     report_freq = db.Column(db.Integer, server_default='1', nullable=False)
-    proximity_unit = db.Column(db.Enum('M', 'H', 'D', 'W', name='proximity_unit'), nullable=False, server_default="M")
+    proximity_unit = db.Column(db.Enum('M', 'H', 'D', 'W', name='_proximity_unit'), nullable=False, server_default="M")
     display_proximity = db.Column(db.Boolean, server_default=expression.true(), nullable=False)
 
     safeholder = db.relationship("UserModel")
 
-    # digital_key = db.Column(db.DateTime(), nullable=False)
-    # location = db.Column(db.String(80), nullable=False)
-    # measurement = db.Column(db.String(80), nullable=False)
-    # value = db.Column(db.Float(precision=2), nullable=False)
-    # unit = db.Column(db.String(30), nullable=False)
-    # user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     def save_to_db(self) -> None:
         """
@@ -61,6 +55,13 @@ class SafeModel(db.Model):
         :param
         """
         return cls.query.all()
+
+    @classmethod
+    def find_available(cls) -> List["SafeModel"]:
+        """
+        :param
+        """
+        return cls.query.filter_by(safeholder_id=None).all()
 
 class SafeEventModel(db.Model):
     __tablename__ = 'safe_event'

@@ -15,8 +15,10 @@ import sys
 from db import db
 from ma import ma
 from resources.user import UserRegister, UserList, UserLogin, TokenRefresh
-from resources.safe import SafeList, SafeRegister, SafeCheckin
+from resources.safe import SafeList, SafeRegister, SafeCheckin, AvailableSafes
 from resources.confirmation import Confirmation, ConfirmationByUser
+from resources.operations import ClaimSafe
+
 app = Flask(__name__)
 cors = CORS(app)
 print(f"Using settings from {os.environ['APPLICATION_SETTINGS']}")
@@ -24,6 +26,8 @@ app.config.from_object('default_config')
 app.config.from_envvar("APPLICATION_SETTINGS")
 
 api = Api(app)
+db.init_app(app)
+ma.init_app(app)
 
 jwt = JWTManager(app)
 migrate = Migrate(app=app, db=db)
@@ -49,6 +53,11 @@ api.add_resource(ConfirmationByUser, "/check/<int:user_id>")
 api.add_resource(SafeList, "/api/safe")
 api.add_resource(SafeRegister, "/api/register")
 api.add_resource(SafeCheckin, "/api/checkin")
+api.add_resource(AvailableSafes, "/api/available_safes")
+# Operations endpoints
+api.add_resource(ClaimSafe, "/operation/claim_safe")
+
+
 
 if __name__ == "__main__":
     intent = os.environ.get('FLASK_INTENT', None)
@@ -62,8 +71,7 @@ if __name__ == "__main__":
                         filemode='w',
                         level=loglevel)
 
-    db.init_app(app)
-    ma.init_app(app)
+
     if intent == 'dev':
         print('Running with "dev" environment')
         logging.info('Running with "dev" environment')
@@ -72,7 +80,6 @@ if __name__ == "__main__":
         print('Running with "prod" environment')
         logging.info('Running with "prod" environment')
         app.run(host='0.0.0.0', port=5000, debug=False)
-    else:
         print('ERROR:  No FLASK_INTENT environment variable')
         logging.error('ERROR:  No FLASK_INTENT environment variable')
         sys.exit(-1)
