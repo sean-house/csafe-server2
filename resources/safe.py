@@ -1,12 +1,6 @@
 from typing import Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
-
-import os
-# import hashlib
-# import hmac
-# import json
-# import traceback
 
 from flask_restful import Resource
 from flask import request, jsonify
@@ -15,16 +9,12 @@ from flask_jwt_extended import jwt_required
 from models.safe import SafeModel, SafeEventModel
 from schemas.safe import SafeSchema
 from libs.crypto import Crypto
-
-# from models.confirmation import ConfirmationModel
-# from models.user import UserModel
-# from schemas.user import UserSchema
-# from libs.mailgun import MailGunException
 import messages.en as msgs
 
 safe_schema = SafeSchema()
 crypto_handler = Crypto()
 
+# Event codes, stored in the SAFE_EVENT table enable filtering of events that are of less interest
 event_codes = {
     "STARTING_OPERATION": 1,
     "SAFE_LOCKED": 2,
@@ -32,6 +22,21 @@ event_codes = {
     "SAFE_TERMINATED": 999
 }
 DEFAULT_EVENT = 800
+
+def convert_timestamp(tstamp_str: str) -> datetime:
+    """
+    Convert a timestamp in string form into a timezone-aware python datetime object
+    :param tstamp: Timestamp in format YYYY-MM-DD HH:MM:SS.SSSSS
+    :return: pythin timestamp
+    """
+    # print(f"Diagnostic: convert timestamp: {tstamp_str} -> ", end='')
+    if "+" in tstamp_str or '-' in tstamp_str:
+        tstamp = datetime.strptime(tstamp_str, '%Y-%m-%d %H:%M:%S.%f%z')
+        tstamp = tstamp.replace(tzinfo=timezone.utc)
+    else:
+        tstamp = datetime.strptime(tstamp_str, '%Y-%m-%d %H:%M:%S.%f')
+    # print(tstamp)
+    return tstamp
 
 class SafeList(Resource):
     @classmethod
@@ -95,7 +100,7 @@ class SafeCheckin(Resource):
                         message_lines = [message, ]
                     status_parts = message_lines[0].split(',')
                     if len(status_parts) == 6:
-                        this_safe.last_update = status_parts[2]
+                        this_safe.last_update = convert_timestamp(status_parts[2])
                         if status_parts[3] == 'True':
                             this_safe.hinge_closed = True
                         if status_parts[4] == 'True':
@@ -115,7 +120,7 @@ class SafeCheckin(Resource):
                                         event = SafeEventModel(hardware_id=this_safe.hardware_id,
                                                                event_code=event_codes.get(event_parts[2], DEFAULT_EVENT),
                                                                detail=event_parts[2],
-                                                               timestamp=event_parts[1])
+                                                               timestamp=convert_timestamp(event_parts[1]))
                                         event.save_to_db()
                         logging.info(f"Safe parameters updated for {this_safe.hardware_id}")
                         # Now construct a response, encrypt, sign and return it

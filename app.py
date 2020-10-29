@@ -18,6 +18,7 @@ from resources.user import UserRegister, UserList, UserLogin, TokenRefresh
 from resources.safe import SafeList, SafeRegister, SafeCheckin, AvailableSafes
 from resources.confirmation import Confirmation, ConfirmationByUser
 from resources.operations import ClaimSafe
+from resources.relationship import GetRelationStatus
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -42,6 +43,7 @@ def create_tables():
 def handle_marshmallow_error(err):
     return jsonify(err.messages), 400
 
+
 # User endpoints
 api.add_resource(UserRegister, "/register")
 api.add_resource(UserList, "/users")
@@ -50,12 +52,17 @@ api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(Confirmation, "/confirm/<string:confirmation_id>")
 api.add_resource(ConfirmationByUser, "/check/<int:user_id>")
 # Safe endpoints
-api.add_resource(SafeList, "/api/safe")
-api.add_resource(SafeRegister, "/api/register")
-api.add_resource(SafeCheckin, "/api/checkin")
-api.add_resource(AvailableSafes, "/api/available_safes")
+api.add_resource(SafeList, "/api/safe")  # GET
+api.add_resource(SafeRegister, "/api/register")  # POST
+api.add_resource(SafeCheckin, "/api/checkin")  # POST
+api.add_resource(AvailableSafes, "/api/available_safes")  # GET
 # Operations endpoints
-api.add_resource(ClaimSafe, "/operation/claim_safe")
+api.add_resource(ClaimSafe, "/operation/claim_safe")  # GET/DELETE - SH to register ownership of safe or release one
+# api.add_resource(KH_Claim_SH, "/operation/claim_sh")  # GET/DELETE - KH to initiate/release relationship with SH
+# api.add_resource(SH_Emergency, "/operation/emergency')  # DELETE - SH emergency terminate of relationship
+api.add_resource(GetRelationStatus, "/operation/relationship")  # GET - Either party to get status of their relationship
+# api.add_resource(AddMessage, "/operation/add_message")  # POST - Either party to leave message for the other
+# api.add_resource(UpdateSafeParms, "/operation/update_safe")  # PATCH - KH to change parameters of Safe
 
 
 

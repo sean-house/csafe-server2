@@ -2,7 +2,6 @@ from sqlalchemy.sql import expression
 
 from db import db
 from typing import List
-#from datetime import datetime
 
 
 class SafeModel(db.Model):
@@ -42,7 +41,6 @@ class SafeModel(db.Model):
 
     @classmethod
     def find_by_digital_key(cls, digi_key) -> List["SafeModel"]:
-        print(f"Find by location called for: {digi_key}")
         return cls.query.filter_by(digital_key=digi_key).all()
 
     @classmethod
