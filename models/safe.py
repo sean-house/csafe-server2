@@ -61,6 +61,13 @@ class SafeModel(db.Model):
         """
         return cls.query.filter_by(safeholder_id=None).all()
 
+    @classmethod
+    def find_by_safeholder_id(cls, _safeholder_id: int) -> List["SafeModel"]:
+        """
+        :param
+        """
+        return cls.query.filter_by(safeholder_id=_safeholder_id).all()
+
 class SafeEventModel(db.Model):
     __tablename__ = 'safe_event'
 

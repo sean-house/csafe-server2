@@ -17,7 +17,7 @@ from ma import ma
 from resources.user import UserRegister, UserList, UserLogin, TokenRefresh
 from resources.safe import SafeList, SafeRegister, SafeCheckin, AvailableSafes
 from resources.confirmation import Confirmation, ConfirmationByUser
-from resources.operations import ClaimSafe
+from resources.operations import ClaimSafe, KHClaimSH
 from resources.relationship import GetRelationStatus
 
 app = Flask(__name__)
@@ -58,8 +58,8 @@ api.add_resource(SafeCheckin, "/api/checkin")  # POST
 api.add_resource(AvailableSafes, "/api/available_safes")  # GET
 # Operations endpoints
 api.add_resource(ClaimSafe, "/operation/claim_safe")  # GET/DELETE - SH to register ownership of safe or release one
-# api.add_resource(KH_Claim_SH, "/operation/claim_sh")  # GET/DELETE - KH to initiate/release relationship with SH
-# api.add_resource(SH_Emergency, "/operation/emergency')  # DELETE - SH emergency terminate of relationship
+api.add_resource(KHClaimSH, "/operation/claim_sh")  # POST/DELETE - KH to initiate/release relationship with SH
+# api.add_resource(SHEmergency, "/operation/emergency')  # DELETE - SH emergency terminate of relationship
 api.add_resource(GetRelationStatus, "/operation/relationship")  # GET - Either party to get status of their relationship
 # api.add_resource(AddMessage, "/operation/add_message")  # POST - Either party to leave message for the other
 # api.add_resource(UpdateSafeParms, "/operation/update_safe")  # PATCH - KH to change parameters of Safe

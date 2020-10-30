@@ -16,7 +16,7 @@ class UserModel(db.Model):
     email = db.Column(db.String(80), nullable=False, unique=True)
     pw_salt = db.Column(db.LargeBinary(80), nullable=False)
     pw_hash = db.Column(db.LargeBinary(100), nullable=False)
-    displayname = db.Column(db.String(100), nullable=False)
+    displayname = db.Column(db.String(100), nullable=False, unique=True)
     confirmation = db.relationship(
             "ConfirmationModel", lazy="dynamic", cascade="all, delete-orphan"
     )
@@ -73,3 +73,7 @@ class UserModel(db.Model):
     @classmethod
     def find_by_id(cls, _id: int) -> 'UserModel':
         return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def find_by_displayname(cls, displayname: str) -> 'UserModel':
+        return cls.query.filter_by(displayname=displayname).first()

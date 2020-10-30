@@ -8,11 +8,13 @@ class RelationshipModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     keyholder_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     safeholder_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    safe_id = db.Column(db.String(64), db.ForeignKey("safe.hardware_id"), nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=True)
 
     safeholder = db.relationship("UserModel", backref='safeholder', foreign_keys=[safeholder_id])
     keyholder = db.relationship("UserModel", backref='keyholder', foreign_keys=[keyholder_id])
+    safe = db.relationship("SafeModel", backref='safe', foreign_keys=[safe_id])
 
     def save_to_db(self) -> None:
         """
@@ -39,6 +41,10 @@ class RelationshipModel(db.Model):
     @classmethod
     def find_by_keyholder_id(cls, _id) -> List["RelationshipModel"]:
         return cls.query.filter_by(keyholder_id=_id).all()
+
+    @classmethod
+    def find_by_safe_id(cls, _safe_id) -> List["RelationshipModel"]:
+        return cls.query.filter_by(safe_id=_safe_id).all()
 
     @classmethod
     def find_all(cls) -> List["RelationshipModel"]:

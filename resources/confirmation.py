@@ -33,10 +33,10 @@ class Confirmation(Resource):
         elif confirmation.expired:
             error_msg = msgs.EXPIRED, 400
 
-        if error_msg[ 0 ]:
+        if error_msg[0]:
             return make_response(
                     render_template("confirmation_error_page.html",
-                                    error_msg=error_msg[ 0 ]),
+                                    error_msg=error_msg[0]),
                     error_msg[ 1 ],
                     headers,
             )
