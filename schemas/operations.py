@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
 
 class SafeClaimSchema(Schema):
@@ -7,3 +8,7 @@ class SafeClaimSchema(Schema):
 class KH_Claim_SHSchema(Schema):
     displayname = fields.String(required=True)
     digital_key = fields.String(required=True)
+
+
+
+

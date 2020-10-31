@@ -11,23 +11,28 @@ from datetime import date, datetime, timezone
 
 from models.safe import SafeModel
 from models.user import UserModel
-from models.relationship import RelationshipModel
+from models.relationship import RelationshipModel, RelationshipMessageModel
 from schemas.safe import SafeSchema
 from schemas.user import UserSchema
 from schemas.operations import SafeClaimSchema, KH_Claim_SHSchema
+from schemas.relationship import RelationshipMessageSchema, MessageGetSchema, MessagePostSchema
 import messages.en as msgs
 
-
+# Set up the schema objects
 safe_claim_schema = SafeClaimSchema()
 kh_claim_sh_schema = KH_Claim_SHSchema()
 user_schema = UserSchema()
 safe_schema = SafeSchema()
+message_get_schema = MessageGetSchema()
+message_post_schema = MessagePostSchema()
+relationship_message_schema = RelationshipMessageSchema()
 
 
 class ClaimSafe(Resource):
     """
     Endpoints associated with the connection of a safe to a safeholder
     """
+
     @classmethod
     @jwt_required
     def post(cls):
@@ -40,7 +45,7 @@ class ClaimSafe(Resource):
         # Check if we have this safe
         requested_safe = SafeModel.find_by_id(parms['hardware_id'])
         if not requested_safe:
-            return{"error": msgs.CLAIM_NO_SAFE}, 400
+            return {"error": msgs.CLAIM_NO_SAFE}, 400
         # Then check if the safe is already claimed
         if requested_safe.safeholder:
             return {"error": msgs.CLAIM_NOT_AVAILABLE}, 400
@@ -62,7 +67,7 @@ class ClaimSafe(Resource):
         # Check if we have this safe
         requested_safe = SafeModel.find_by_id(parms['hardware_id'])
         if not requested_safe:
-            return{"error": msgs.CLAIM_NO_SAFE}, 400
+            return {"error": msgs.CLAIM_NO_SAFE}, 400
         # Next check if the safe is owned by this_user
         if requested_safe.safeholder is None:
             # The safe does not have an owner - cannot delete it
@@ -82,6 +87,7 @@ class KHClaimSH(Resource):
     Endpoint associated with a keyholder establishing rleationship with a safeholder
     :param
     """
+
     @classmethod
     @jwt_required
     def post(cls):
@@ -169,3 +175,71 @@ class KHClaimSH(Resource):
                         return {"msg": msgs.RELATIONSHIP_TERMINATED}, 200
                 return {"msg": msgs.INCORRECT_KH}, 401
         return {"msg": msgs.INCORRECT_KEY}, 401
+
+
+class Message(Resource):
+    """
+    Endpoints associated with setting and getting relationship messages
+    :parameter
+    """
+    @classmethod
+    @jwt_required
+    def get(cls):
+        """
+        Request argument type may be 'all', 'unread',  argument relationship = unique ID for the relationship
+        :parameter
+        """
+        parms = message_get_schema.load(request.args)
+
+        if parms['type'] == 'unread':
+            return {
+                       "messages": [relationship_message_schema.dump(message) for message in
+                                    RelationshipMessageModel.find_unread_by_relationship(
+                                        _relationship_id=parms['relationship_id'])]
+                   }, 200
+        elif parms['type'] == 'all':
+            return {
+                       "messages": [relationship_message_schema.dump(message) for message in
+                                    RelationshipMessageModel.find_all(
+                                        _relationship_id=parms['relationship_id'])]
+                   }, 200
+        else:
+            return{"error": msgs.BAD_REQUEST}, 400
+
+    @classmethod
+    @jwt_required
+    def post(cls):
+        """
+        :parameter
+        """
+        parms = message_post_schema.load(request.get_json())
+        this_user_id = get_jwt_identity()
+        requested_relationship = RelationshipModel.find_by_id(_id=parms['relationship_id'])
+        if requested_relationship:
+            now = datetime.now(timezone.utc)
+            # Check the role of this user
+            is_sh = False
+            is_kh = False
+            if this_user_id == requested_relationship.safeholder_id:
+                is_sh = True
+            elif this_user_id == requested_relationship.keyholder_id:
+                is_kh = True
+            else:
+                return {"msg": msgs.NOT_AUTHORISED}, 400
+            # Check the relationship is not terminated
+            if requested_relationship.end_date is not None:
+                return {"msg": msgs.RELATIONSHIP_TERMINATED}, 400
+            # OK, so now create the message
+            message = RelationshipMessageModel(
+                    relationship_id=parms['relationship_id'],
+                    originator_id=this_user_id,
+                    message=parms['message'],
+                    message_timestamp=now,
+                    seen_by_kh=is_kh,
+                    seen_by_sh=is_sh
+                    )
+            message.save_to_db()
+            return {"msg": "OK"}, 200
+        # No relationship exists
+        return {"error": msgs.NOT_AUTHORISED}, 400
+

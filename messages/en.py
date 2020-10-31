@@ -92,7 +92,7 @@ RELATIONSHIP_END_MAIL_BODY_HTML = """
 <strong>Dear {name},</strong><br><br>
 Please be aware, Keyholder <strong>{kh_displayname}</strong> has relinquished control of your safe.
 <br><br>
-You are now at liberty to give control to another Keyholder using a new Digital key, {digital_key}
+You are now at liberty to give control to another Keyholder using a new Digital key, <strong>{digital_key}</strong>
 <br><br>
 <strong>IMPORTANT: Please keep this email, or the digital key above, safe. It will be needed if a new Keyholder is to 
 take over control of the safe.</strong>
@@ -124,3 +124,5 @@ SH_IN_RELATIONSHIP = "The safeholder already has a keyholder for that safe"
 RELATIONSHIP_ESTABLISHED = "Relationship established"
 RELATIONSHIP_TERMINATED = "Relationship terminated"
 INCORRECT_KH = "You are not the keyholder for that safe"
+BAD_REQUEST = "Unexpected API Request"
+NOT_AUTHORISED = "Not authorised"

@@ -1,4 +1,6 @@
 from requests import Response
+from sqlalchemy.sql import expression
+from sqlalchemy import and_, or_, not_
 from typing import List, Union
 
 from db import db
@@ -46,9 +48,9 @@ class RelationshipModel(db.Model):
                                       to_email=[self.safeholder.email],
                                       subject=msgs.RELATIONSHIP_MAIL_SUBJECT,
                                       text=msgs.RELATIONSHIP_START_MAIL_BODY.format(name=self.safeholder.username,
-                                                                            kh_displayname=self.keyholder.displayname),
+                                                                                    kh_displayname=self.keyholder.displayname),
                                       html=msgs.RELATIONSHIP_START_MAIL_BODY_HTML.format(name=self.safeholder.username,
-                                                                            kh_displayname=self.keyholder.displayname)
+                                                                                         kh_displayname=self.keyholder.displayname)
                                       )
         if status == 'end':
             return Mailgun.send_email(from_email=msgs.FROM_EMAIL,
@@ -56,11 +58,11 @@ class RelationshipModel(db.Model):
                                       to_email=[self.safeholder.email],
                                       subject=msgs.RELATIONSHIP_MAIL_SUBJECT,
                                       text=msgs.RELATIONSHIP_END_MAIL_BODY.format(name=self.safeholder.username,
-                                                                            kh_displayname=self.keyholder.displayname,
-                                                                            digital_key=self.safe.digital_key),
+                                                                                  kh_displayname=self.keyholder.displayname,
+                                                                                  digital_key=self.safe.digital_key),
                                       html=msgs.RELATIONSHIP_END_MAIL_BODY_HTML.format(name=self.safeholder.username,
-                                                                            kh_displayname=self.keyholder.displayname,
-                                                                            digital_key=self.safe.digital_key)
+                                                                                       kh_displayname=self.keyholder.displayname,
+                                                                                       digital_key=self.safe.digital_key)
                                       )
 
     @classmethod
@@ -85,4 +87,52 @@ class RelationshipModel(db.Model):
         :param
         """
         return cls.query.all()
+
+
+class RelationshipMessageModel(db.Model):
+    __tablename__ = "relationship_message"
+
+    id = db.Column(db.Integer, primary_key=True)
+    relationship_id = db.Column(db.Integer, db.ForeignKey("relationship.id"), nullable=False)
+    originator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    message_timestamp = db.Column(db.DateTime, nullable=False)
+    seen_by_kh = db.Column(db.Boolean, nullable=False, server_default=expression.false())
+    seen_by_sh = db.Column(db.Boolean, nullable=False, server_default=expression.false())
+
+    originator = db.relationship("UserModel", backref='originator', foreign_keys=[originator_id])
+    relationship = db.relationship("RelationshipModel", backref='relationship', foreign_keys=[relationship_id])
+
+    def save_to_db(self) -> None:
+        """
+        :cvar
+        """
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self) -> None:
+        """
+        :param
+        """
+        db.session.delete(self)
+        db.session.commit()
+
+    @classmethod
+    def find_unread_by_relationship(cls, _relationship_id: int) -> List["RelationshipMessageModel"]:
+        """
+        Find all messages
+        :parameter
+        """
+        return cls.query.filter_by(relationship_id=_relationship_id).filter(or_(cls.seen_by_kh == expression.false(),
+                                                                               cls.seen_by_sh == expression.false())
+                                                                            ).order_by(cls.message_timestamp.desc()
+                                                                                       ).all()
+
+    @classmethod
+    def find_all(cls, _relationship_id: int) -> List["RelationshipMessageModel"]:
+        """
+        Find all messages
+        :parameter
+        """
+        return cls.query.filter_by(relationship_id=_relationship_id).order_by(cls.message_timestamp.desc()).all()
 
