@@ -1,11 +1,13 @@
 from uuid import uuid4
+import logging
 from flask_restful import Resource
 from flask import request
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
 )
-from datetime import date
+from sqlalchemy.sql import expression
+from datetime import date, datetime, timezone
 
 from models.safe import SafeModel
 from models.user import UserModel
@@ -115,7 +117,11 @@ class KHClaimSH(Resource):
                         start_date=date.today()
                 )
                 relationship.save_to_db()
-                # TODO Add message to relationship message table to confirm relationship established
+                # Send email to Safeholder to confirm start of relationship
+                relationship.send_relationship_email(status='start')
+                # Log the start of the relationship
+                logging.info(f"RELATIONSHIP: START {relationship.keyholder.username} - "
+                             f"{relationship.safeholder.username}")
                 return {"msg": msgs.RELATIONSHIP_ESTABLISHED}, 200
         # If we get here the safeholder had no safes that the digital key fitted
         return {"msg": msgs.INCORRECT_KEY}, 401
@@ -130,6 +136,7 @@ class KHClaimSH(Resource):
         parms = kh_claim_sh_schema.load(request.get_json())
         safeholder = UserModel.find_by_displayname(parms['displayname'])
         keyholder = UserModel.find_by_id(get_jwt_identity())
+        now = datetime.now(timezone.utc)
         # First check if the safeholder exists
         if not safeholder:
             return {"msg": msgs.USER_NONEXISTANT.format(parms['displayname'])}, 400
@@ -144,13 +151,21 @@ class KHClaimSH(Resource):
                 for relationship in relationship_list:
                     if (relationship.keyholder_id == keyholder.id) and (relationship.end_date is None):
                         # OK, we have an active relationship between this KH and the SH
-                        relationship.end_date = date.today()
-                        relationship.save_to_db()
-                        # Set a new digital_key for the safe
+                        # Set a new digital_key for the safe - and unlock it (for safety)
                         digital_key = str(uuid4())
                         safe.digital_key = digital_key
+                        safe.auth_to_unlock = expression.true()
+                        safe.unlock_time = now
+                        safe.last_update = now
                         safe.save_to_db()
-                        # TODO Send email to SH informing them the KH has released them - and give new digital key
+                        # Then terminate the relationship - and send a mail to the safeholder
+                        relationship.end_date = date.today()
+                        relationship.send_relationship_email(status='end')
+                        relationship.save_to_db()
+                        # Log the end of the relationship
+                        logging.info(f"RELATIONSHIP: END {relationship.keyholder.username} - "
+                                     f"{relationship.safeholder.username}")
+
                         return {"msg": msgs.RELATIONSHIP_TERMINATED}, 200
                 return {"msg": msgs.INCORRECT_KH}, 401
         return {"msg": msgs.INCORRECT_KEY}, 401

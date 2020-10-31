@@ -1,5 +1,10 @@
+from requests import Response
+from typing import List, Union
+
 from db import db
-from typing import List
+from models.user import UserModel
+import messages.en as msgs
+from libs.mailgun import Mailgun
 
 
 class RelationshipModel(db.Model):
@@ -29,6 +34,34 @@ class RelationshipModel(db.Model):
         """
         db.session.delete(self)
         db.session.commit()
+
+    def send_relationship_email(self, status: str) -> Union[Response, None]:
+        """
+        Send an email to the Safeholder on start of stop of a new relationship.
+        status='start' for a new relationship, 'end' for a termination
+        """
+        if status == 'start':
+            return Mailgun.send_email(from_email=msgs.FROM_EMAIL,
+                                      from_title=msgs.FROM_TITLE,
+                                      to_email=[self.safeholder.email],
+                                      subject=msgs.RELATIONSHIP_MAIL_SUBJECT,
+                                      text=msgs.RELATIONSHIP_START_MAIL_BODY.format(name=self.safeholder.username,
+                                                                            kh_displayname=self.keyholder.displayname),
+                                      html=msgs.RELATIONSHIP_START_MAIL_BODY_HTML.format(name=self.safeholder.username,
+                                                                            kh_displayname=self.keyholder.displayname)
+                                      )
+        if status == 'end':
+            return Mailgun.send_email(from_email=msgs.FROM_EMAIL,
+                                      from_title=msgs.FROM_TITLE,
+                                      to_email=[self.safeholder.email],
+                                      subject=msgs.RELATIONSHIP_MAIL_SUBJECT,
+                                      text=msgs.RELATIONSHIP_END_MAIL_BODY.format(name=self.safeholder.username,
+                                                                            kh_displayname=self.keyholder.displayname,
+                                                                            digital_key=self.safe.digital_key),
+                                      html=msgs.RELATIONSHIP_END_MAIL_BODY_HTML.format(name=self.safeholder.username,
+                                                                            kh_displayname=self.keyholder.displayname,
+                                                                            digital_key=self.safe.digital_key)
+                                      )
 
     @classmethod
     def find_by_id(cls, _id) -> "RelationshipModel":

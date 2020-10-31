@@ -50,9 +50,9 @@ class UserModel(db.Model):
         return Mailgun.send_email(from_email=msgs.FROM_EMAIL,
                                   from_title=msgs.FROM_TITLE,
                                   to_email=[self.email],
-                                  subject=msgs.MAIL_SUBJECT,
-                                  text=msgs.MAIL_BODY.format(name=self.username, link=link),
-                                  html=msgs.MAIL_BODY_HTML.format(name=self.username, link=link)
+                                  subject=msgs.CONFIRMATION_MAIL_SUBJECT,
+                                  text=msgs.CONFIRMATION_MAIL_BODY.format(name=self.username, link=link),
+                                  html=msgs.CONFIRMATION_MAIL_BODY_HTML.format(name=self.username, link=link)
                                   )
 
     @classmethod

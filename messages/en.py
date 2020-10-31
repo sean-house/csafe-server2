@@ -20,11 +20,11 @@ MAILGUN_NO_API_KEY = "Cannot load Mailgun API key from environment - cannot send
 MAILGUN_NO_DOMAIN = "Cannot load mail domain from environment - cannot send emails"
 MAILGUN_FAILED_TO_SEND = "Failure in Mailgun service. Error = {}.  Cannot send mail."
 
-# Confirmation email
+# Mailings
 FROM_TITLE = "CSAFE Admin"
 FROM_EMAIL = "admin@csafe.com"
-MAIL_SUBJECT = "CSAFE User - Confirm your email"
-MAIL_BODY = """
+CONFIRMATION_MAIL_SUBJECT = "CSAFE User - Confirm your email"
+CONFIRMATION_MAIL_BODY = """
 Dear {name}, \n
 \n
 Thank you for registering to use the CSAFE service. \n
@@ -36,7 +36,7 @@ If you did not register for the CSAFE service you can safely ignore this message
 \n
 CSAFE Administrator
 """
-MAIL_BODY_HTML = """
+CONFIRMATION_MAIL_BODY_HTML = """
 <html>
 <strong>Dear {name},</strong><br><br>
 Thank you for registering to use the CSAFE service.<br>
@@ -44,6 +44,63 @@ Thank you for registering to use the CSAFE service.<br>
 Please click this link to activate your account:<br>
 <a href="{link}">{link}</a><br><br>
 Please note: The link expires in 30 minutes<br><br>
+CSAFE Administrator
+</html>
+"""
+RELATIONSHIP_MAIL_SUBJECT = "CSAFE Relationship Update"
+RELATIONSHIP_START_MAIL_BODY = """
+Dear {name}, \n
+\n
+Please be aware, Keyholder {kh_displayname} has just taken control of your safe.
+\n\n
+You should be careful not to displease them.  When (and whether) your safe opens again is now up to them.
+\n\n
+Thank you for using the CSAFE service.
+\n\n
+CSAFE Administrator
+"""
+RELATIONSHIP_START_MAIL_BODY_HTML = """
+<html>
+<strong>Dear {name},</strong><br><br>
+Please be aware, Keyholder <strong>{kh_displayname}</strong> has just taken control of your safe.
+<br><br>
+You should be careful not to displease them.  When (and whether) your safe opens again is now up to them.
+<br><br>
+Thank you for registering to use the CSAFE service.<br>
+<br><br>
+CSAFE Administrator
+</html>
+"""
+RELATIONSHIP_END_MAIL_BODY = """
+Dear {name}, \n
+\n
+Please be aware, Keyholder {kh_displayname} has relinquished control of your safe.
+\n
+You are now at liberty to give control to another Keyholder using a new Digital key, {digital_key}
+\n
+IMPORTANT: Please keep this email, or the digital key above, safe. It will be needed if a new Keyholder is to 
+take over control of the safe.
+\n
+For safety, your safe is now unlocked.
+\n
+Thank you for using the CSAFE service.
+\n
+CSAFE Administrator
+"""
+RELATIONSHIP_END_MAIL_BODY_HTML = """
+<html>
+<strong>Dear {name},</strong><br><br>
+Please be aware, Keyholder <strong>{kh_displayname}</strong> has relinquished control of your safe.
+<br><br>
+You are now at liberty to give control to another Keyholder using a new Digital key, {digital_key}
+<br><br>
+<strong>IMPORTANT: Please keep this email, or the digital key above, safe. It will be needed if a new Keyholder is to 
+take over control of the safe.</strong>
+<br><br>
+For safety, your safe is now unlocked.
+<br><br>
+Thank you for using the CSAFE service.<br>
+<br>
 CSAFE Administrator
 </html>
 """
