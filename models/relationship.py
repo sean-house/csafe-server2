@@ -97,8 +97,8 @@ class RelationshipMessageModel(db.Model):
     originator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     message = db.Column(db.Text, nullable=False)
     message_timestamp = db.Column(db.DateTime, nullable=False)
-    seen_by_kh = db.Column(db.Boolean, nullable=False, server_default=expression.false())
-    seen_by_sh = db.Column(db.Boolean, nullable=False, server_default=expression.false())
+    seen_by_kh = db.Column(db.DateTime, nullable=True)
+    seen_by_sh = db.Column(db.DateTime, nullable=True)
 
     originator = db.relationship("UserModel", backref='originator', foreign_keys=[originator_id])
     relationship = db.relationship("RelationshipModel", backref='relationship', foreign_keys=[relationship_id])
@@ -123,8 +123,8 @@ class RelationshipMessageModel(db.Model):
         Find all messages
         :parameter
         """
-        return cls.query.filter_by(relationship_id=_relationship_id).filter(or_(cls.seen_by_kh == expression.false(),
-                                                                               cls.seen_by_sh == expression.false())
+        return cls.query.filter_by(relationship_id=_relationship_id).filter(or_(cls.seen_by_kh == None,
+                                                                               cls.seen_by_sh == None)
                                                                             ).order_by(cls.message_timestamp.desc()
                                                                                        ).all()
 

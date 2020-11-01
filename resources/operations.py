@@ -215,15 +215,16 @@ class Message(Resource):
         parms = message_post_schema.load(request.get_json())
         this_user_id = get_jwt_identity()
         requested_relationship = RelationshipModel.find_by_id(_id=parms['relationship_id'])
+        now = datetime.now(timezone.utc)
         if requested_relationship:
             now = datetime.now(timezone.utc)
             # Check the role of this user
-            is_sh = False
-            is_kh = False
+            seen_by_sh = None
+            seen_by_kh = None
             if this_user_id == requested_relationship.safeholder_id:
-                is_sh = True
+                seen_by_sh = now
             elif this_user_id == requested_relationship.keyholder_id:
-                is_kh = True
+                seen_by_kh = now
             else:
                 return {"msg": msgs.NOT_AUTHORISED}, 400
             # Check the relationship is not terminated
@@ -235,8 +236,8 @@ class Message(Resource):
                     originator_id=this_user_id,
                     message=parms['message'],
                     message_timestamp=now,
-                    seen_by_kh=is_kh,
-                    seen_by_sh=is_sh
+                    seen_by_kh=seen_by_kh,
+                    seen_by_sh=seen_by_sh
                     )
             message.save_to_db()
             return {"msg": "OK"}, 200

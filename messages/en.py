@@ -66,7 +66,7 @@ Please be aware, Keyholder <strong>{kh_displayname}</strong> has just taken cont
 <br><br>
 You should be careful not to displease them.  When (and whether) your safe opens again is now up to them.
 <br><br>
-Thank you for registering to use the CSAFE service.<br>
+Thank you for using the CSAFE service.<br>
 <br><br>
 CSAFE Administrator
 </html>
