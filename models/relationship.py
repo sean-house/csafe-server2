@@ -70,15 +70,15 @@ class RelationshipModel(db.Model):
         return cls.query.filter_by(id=_id).first()
 
     @classmethod
-    def find_by_safeholder_id(cls, _id) -> List["RelationshipModel"]:
+    def find_by_safeholder_id(cls, _id: int) -> List["RelationshipModel"]:
         return cls.query.filter_by(safeholder_id=_id).all()
 
     @classmethod
-    def find_by_keyholder_id(cls, _id) -> List["RelationshipModel"]:
+    def find_by_keyholder_id(cls, _id: int) -> List["RelationshipModel"]:
         return cls.query.filter_by(keyholder_id=_id).all()
 
     @classmethod
-    def find_by_safe_id(cls, _safe_id) -> List["RelationshipModel"]:
+    def find_by_safe_id(cls, _safe_id: int) -> List["RelationshipModel"]:
         return cls.query.filter_by(safe_id=_safe_id).all()
 
     @classmethod
@@ -87,6 +87,13 @@ class RelationshipModel(db.Model):
         :param
         """
         return cls.query.all()
+
+    @classmethod
+    def find_any(cls, _id: int) -> List["RelationshipModel"]:
+        """
+        :parameter
+        """
+        return cls.query.filter(and_(cls.end_date == None, or_(cls.safeholder_id == _id, cls.keyholder_id == _id))).all()
 
 
 class RelationshipMessageModel(db.Model):

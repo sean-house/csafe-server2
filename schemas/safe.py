@@ -10,9 +10,3 @@ class SafeSchema(SQLAlchemyAutoSchema):
         load_only = ('public_key', 'displayname')
         include_relationships = True
         load_instance = True
-
-    # hardware_id = fields.Str()
-    # username = fields.Str(required=True)
-    # password = fields.Str(required=True)
-    # email = fields.Str(required=True)
-    # displayname = fields.Str(required=True)

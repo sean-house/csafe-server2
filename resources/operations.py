@@ -14,7 +14,7 @@ from models.user import UserModel
 from models.relationship import RelationshipModel, RelationshipMessageModel
 from schemas.safe import SafeSchema
 from schemas.user import UserSchema
-from schemas.operations import SafeClaimSchema, KH_Claim_SHSchema
+from schemas.operations import SafeClaimSchema, KH_Claim_SHSchema, SafeOpsSchema, SafeSummarySchema
 from schemas.relationship import RelationshipMessageSchema, MessageGetSchema, MessagePostSchema
 import messages.en as msgs
 
@@ -26,6 +26,8 @@ safe_schema = SafeSchema()
 message_get_schema = MessageGetSchema()
 message_post_schema = MessagePostSchema()
 relationship_message_schema = RelationshipMessageSchema()
+safe_ops_schema = SafeOpsSchema()
+safe_summary_schema = SafeSummarySchema()
 
 
 class ClaimSafe(Resource):
@@ -215,7 +217,6 @@ class Message(Resource):
         parms = message_post_schema.load(request.get_json())
         this_user_id = get_jwt_identity()
         requested_relationship = RelationshipModel.find_by_id(_id=parms['relationship_id'])
-        now = datetime.now(timezone.utc)
         if requested_relationship:
             now = datetime.now(timezone.utc)
             # Check the role of this user
@@ -244,3 +245,98 @@ class Message(Resource):
         # No relationship exists
         return {"error": msgs.NOT_AUTHORISED}, 400
 
+
+class SafeOps(Resource):
+    """
+    Endpoints associated with getting and setting safe parameters
+    :parameter
+    """
+    @classmethod
+    @jwt_required
+    def get(cls):
+        """
+        Get safe parameters when hardware_id is specified as request args and this_user is a keyholder
+        covering the requested safe
+        :parameter
+        """
+        parms = safe_ops_schema.load(request.args)
+        this_user_id = get_jwt_identity()
+        relationship_list = RelationshipModel.find_by_keyholder_id(this_user_id)
+        for relationship in relationship_list:
+            if relationship.safe_id == parms['hardware_id']:
+                requested_safe = relationship.safe
+                return {"safe": safe_ops_schema.dump(requested_safe)}, 200
+        # The user is not a KH for that safe so retrun an error
+        else:
+            return {"error": msgs.INCORRECT_KH}, 400
+
+    @classmethod
+    @jwt_required
+    def post(cls):
+        """
+        Update safe parameters.  Include JSON object containing the parameters to be updated.
+        "hardware_id" is mandatory.
+        other fields are optional.  Fields not specified will not be changed.
+        :parameter
+        """
+        parms = safe_ops_schema.load(request.get_json())
+        now = datetime.now(timezone.utc)
+        this_user_id = get_jwt_identity()
+        relationship_list = RelationshipModel.find_by_keyholder_id(this_user_id)
+        for relationship in relationship_list:
+            if relationship.safe_id == parms['hardware_id']:
+                # Delete hardware_id from parms since we do not want to use to update the model object
+                parms.pop('hardware_id', None)
+                # Then update the safe object with the remaining values
+                for key, value in parms.items():
+                    print(key, value)
+                    setattr(relationship.safe, key, value)
+                # The set the last_updated field
+                relationship.safe.last_update = now
+                relationship.safe.save_to_db()
+                return {"safe": safe_ops_schema.dump(relationship.safe)}, 200
+        # The user is not a KH for that safe so retrun an error
+        return {"error": msgs.INCORRECT_KH}, 400
+
+
+class SafeSummary(Resource):
+    """
+    GET method only with no parameters to request summary of the logged on user's relationships; the safe, its status
+    the keyholder and safeholder displaynames
+    :parameter
+    """
+    @classmethod
+    @jwt_required
+    def get(cls):
+        """
+        :parameter
+        """
+        this_user_id = get_jwt_identity()
+        this_user = UserModel.find_by_id(this_user_id)
+        relationship_list = RelationshipModel.find_any(this_user_id)
+        safe_list = SafeModel.find_by_safeholder_id(this_user_id)
+        summary_list = []
+        safe_ids = []
+        # First scan the safes in relationships
+        for relationship in relationship_list:
+            safe_ids.append(relationship.safe.hardware_id)
+            summary_item = {'hardware_id': relationship.safe.hardware_id,
+                            'locked': all([relationship.safe.hinge_closed,
+                                          relationship.safe.lid_closed,
+                                          relationship.safe.bolt_engaged]),
+                            'safeholder_displayname': relationship.safeholder.displayname,
+                            'keyholder_displayname': relationship.keyholder.displayname}
+            summary_list.append(summary_item)
+        # then scan the safes not not in relationships
+        for safe in safe_list:
+            if safe.hardware_id not in safe_ids:
+                summary_item = {
+                    'hardware_id': safe.hardware_id,
+                    'locked': all([safe.hinge_closed,
+                                   safe.lid_closed,
+                                   safe.bolt_engaged]),
+                    'safeholder_displayname': this_user.displayname,
+                    'keyholder_displayname': None
+                }
+                summary_list.append(summary_item)
+        return {"safe_list": [safe_summary_schema.dump(item) for item in summary_list]}, 200
