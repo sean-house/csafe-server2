@@ -132,3 +132,7 @@ dmypy.json
 # Project Specific files
 dbase.db
 .idea
+.DS_Store
+.old-env*
+
+

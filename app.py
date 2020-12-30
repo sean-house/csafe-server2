@@ -83,7 +83,7 @@ if __name__ == "__main__":
     if intent == 'dev':
         print('Running with "dev" environment')
         logging.info('Running with "dev" environment')
-        app.run(port=5000, debug=True, use_reloader=False)  # important to mention debug=True
+        app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)  # important to mention debug=True
     elif intent == 'prod':
         print('Running with "prod" environment')
         logging.info('Running with "prod" environment')
